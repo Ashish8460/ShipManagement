@@ -27,7 +27,7 @@ public class CrewController {
         Crew addCrewToShip = crewService.createAndAddCrewToShip(id, crew);
         if (null == addCrewToShip) {
             return new ResponseEntity<>(ResponseUtil.buildResponse(HttpStatus.BAD_REQUEST.value(), "No Crew Added.",
-                    new HashMap<>()), HttpStatus.BAD_REQUEST);
+                    new HashMap<>()), HttpStatus.OK);
         } else {
             return new ResponseEntity<>(ResponseUtil.buildResponse(HttpStatus.OK.value(), "Crew Added Successfully.",
                     addCrewToShip), HttpStatus.OK);
@@ -40,7 +40,7 @@ public class CrewController {
         List<Crew> creList = crewService.getCrewByShipId(id);
         if (creList.isEmpty()) {
             return new ResponseEntity<>(ResponseUtil.buildResponse(HttpStatus.BAD_REQUEST.value(), "No Crew Members Found.",
-                    creList), HttpStatus.BAD_REQUEST);
+                    creList), HttpStatus.OK);
         } else {
             return new ResponseEntity<>(ResponseUtil.buildResponse(HttpStatus.OK.value(), "Crew Members Fetched Successfully.",
                     creList), HttpStatus.OK);
@@ -53,7 +53,7 @@ public class CrewController {
         Crew updateCrewObj = crewService.updateCrewPosition(id, crewId, crew);
         if (null == updateCrewObj) {
             return new ResponseEntity<>(ResponseUtil.buildResponse(HttpStatus.BAD_REQUEST.value(), "No Crew Updated.",
-                    new HashMap<>()), HttpStatus.BAD_REQUEST);
+                    new HashMap<>()), HttpStatus.OK);
         } else {
             return new ResponseEntity<>(ResponseUtil.buildResponse(HttpStatus.OK.value(), "Crew Updated Successfully.",
                     updateCrewObj), HttpStatus.OK);
@@ -67,7 +67,7 @@ public class CrewController {
         boolean isDeleted = crewService.deleteCrewFromShip(id, crewId);
         if (!isDeleted) {
             return new ResponseEntity<>(ResponseUtil.buildResponse(HttpStatus.BAD_REQUEST.value(), "No Crew Deleted.",
-                    new HashMap<>()), HttpStatus.BAD_REQUEST);
+                    new HashMap<>()), HttpStatus.OK);
         } else {
             return new ResponseEntity<>(ResponseUtil.buildResponse(HttpStatus.OK.value(), "Crew Deleted Successfully.",
                     new HashMap<>()), HttpStatus.OK);

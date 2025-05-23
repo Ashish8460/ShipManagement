@@ -1,5 +1,6 @@
 package com.agile.shipmanagement.ShipManagement.controllers;
 
+import com.agile.shipmanagement.ShipManagement.model.PositionUpdateGroup;
 import com.agile.shipmanagement.ShipManagement.model.Route;
 import com.agile.shipmanagement.ShipManagement.repository.ShipRepository;
 import com.agile.shipmanagement.ShipManagement.service.RouteService;
@@ -11,7 +12,9 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 
 @RestController
 @RequestMapping("/ships")
@@ -24,11 +27,11 @@ public class RouteController {
     ShipRepository shipRepository;
 
     @PostMapping("/{id}/routes")
-    private ResponseEntity<?> assignRouteToShip(@PathVariable("id") Integer shipId,@Validated @RequestBody Route route) {
+    private ResponseEntity<?> assignRouteToShip(@PathVariable("id") Integer shipId, @Validated @RequestBody Route route) {
         Route routeAdded = routeService.assignRouteToShip(shipId, route);
         if (null == routeAdded) {
             return new ResponseEntity<>(ResponseUtil.buildResponse(HttpStatus.BAD_REQUEST.value(), "No Route Added.",
-                    new HashMap<>()), HttpStatus.BAD_REQUEST);
+                    new HashMap<>()), HttpStatus.OK);
         } else {
             return new ResponseEntity<>(ResponseUtil.buildResponse(HttpStatus.OK.value(), "Route Added Successfully.",
                     routeAdded), HttpStatus.OK);
@@ -38,16 +41,24 @@ public class RouteController {
 
     @GetMapping("/{id}/routes")
     private ResponseEntity<?> getRouteByShipId(@PathVariable("id") Integer shipId) {
-        return new ResponseEntity<>(ResponseUtil.buildResponse(HttpStatus.OK.value(), "All Routes Retrieved Successfully.",
-                routeService.getRouteByShipId(shipId)), HttpStatus.OK);
+        List<Route> routeList = routeService.getRouteByShipId(shipId);
+        if (routeList.isEmpty()) {
+            return new ResponseEntity<>(ResponseUtil.buildResponse(HttpStatus.OK.value(), "No Routes Found.",
+                    new ArrayList()), HttpStatus.OK);
+        } else {
+            return new ResponseEntity<>(ResponseUtil.buildResponse(HttpStatus.OK.value(), "All Routes Retrieved Successfully.",
+                    routeList), HttpStatus.OK);
+        }
+
     }
 
-    @PutMapping("/{id}/routes")
-    private ResponseEntity<?> updateRoute(@PathVariable("id") Integer shipId, @PathVariable("routeId") Integer routeId, Route route) {
+    @PutMapping("/{id}/routes/{routeId}")
+    private ResponseEntity<?> updateRoute(@PathVariable("id") Integer shipId, @PathVariable("routeId") Integer routeId, @Valid @RequestBody Route route) {
+
         Route routeUpdated = routeService.updateRoute(shipId, routeId, route);
         if (null == routeUpdated) {
             return new ResponseEntity<>(ResponseUtil.buildResponse(HttpStatus.BAD_REQUEST.value(), "No Route Updated.",
-                    new HashMap<>()), HttpStatus.BAD_REQUEST);
+                    new HashMap<>()), HttpStatus.OK);
         } else {
             return new ResponseEntity<>(ResponseUtil.buildResponse(HttpStatus.OK.value(), "Route Updated Successfully.",
                     routeUpdated), HttpStatus.OK);
@@ -59,7 +70,7 @@ public class RouteController {
         boolean isDeleted = routeService.deleteRouteById(shipId, routeId);
         if (!isDeleted) {
             return new ResponseEntity<>(ResponseUtil.buildResponse(HttpStatus.BAD_REQUEST.value(), "No Route Deleted.",
-                    new HashMap<>()), HttpStatus.BAD_REQUEST);
+                    new HashMap<>()), HttpStatus.OK);
         } else {
             return new ResponseEntity<>(ResponseUtil.buildResponse(HttpStatus.OK.value(), "Route Deleted Successfully.",
                     new HashMap<>()), HttpStatus.OK);

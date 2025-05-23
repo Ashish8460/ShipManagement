@@ -33,8 +33,8 @@ public class ShipController {
     private ResponseEntity<?> getAllShips() {
         List<Ship> allShips = shipService.getAllShips();
         if (allShips.isEmpty()) {
-            return new ResponseEntity<>(ResponseUtil.buildResponse(HttpStatus.BAD_REQUEST.value(), "No Ships Found.",
-                    new ArrayList()), HttpStatus.BAD_REQUEST);
+            return new ResponseEntity<>(ResponseUtil.buildResponse(HttpStatus.OK.value(), "No Ships Found.",
+                    new ArrayList()), HttpStatus.OK);
         } else {
             return new ResponseEntity<>(ResponseUtil.buildResponse(HttpStatus.OK.value(), "All Ships Retrieved Successfully.",
                     shipService.getAllShips()), HttpStatus.OK);
@@ -45,8 +45,8 @@ public class ShipController {
     private ResponseEntity<?> getShipDetailsById(@PathVariable("id") Integer id) {
         Ship shipById = shipService.getShipById(id);
         if (shipById == null) {
-            return new ResponseEntity<>(ResponseUtil.buildResponse(HttpStatus.BAD_REQUEST.value(), "No Ship Found.",
-                    new HashMap<>()), HttpStatus.BAD_REQUEST);
+            return new ResponseEntity<>(ResponseUtil.buildResponse(HttpStatus.OK.value(), "No Ship Found.",
+                    new HashMap<>()), HttpStatus.OK);
         } else {
             return new ResponseEntity<>(ResponseUtil.buildResponse(HttpStatus.OK.value(), "Ship Retrieved Successfully.",
                     shipService.getShipById(id)), HttpStatus.OK);
@@ -57,8 +57,8 @@ public class ShipController {
     private ResponseEntity<?> deleteShipById(@PathVariable("id") Integer id) {
         boolean isDeleted = shipService.deleteShipById(id);
         if (!isDeleted) {
-            return new ResponseEntity<>(ResponseUtil.buildResponse(HttpStatus.BAD_REQUEST.value(), "No Ship Found.",
-                    new HashMap<>()), HttpStatus.BAD_REQUEST);
+            return new ResponseEntity<>(ResponseUtil.buildResponse(HttpStatus.OK.value(), "No Ship Found.",
+                    new HashMap<>()), HttpStatus.OK);
         } else {
             return new ResponseEntity<>(ResponseUtil.buildResponse(HttpStatus.OK.value(), "Ship Deleted Successfully.",
                     new HashMap<>()), HttpStatus.OK);
@@ -69,8 +69,8 @@ public class ShipController {
     private ResponseEntity<?> updateShipById(@PathVariable("id") Integer id, @RequestBody Ship ship) {
         Ship updateShip = shipService.updateShip(id, ship);
         if (null == updateShip) {
-            return new ResponseEntity<>(ResponseUtil.buildResponse(HttpStatus.BAD_REQUEST.value(), "No Ship Found.",
-                    new HashMap<>()), HttpStatus.BAD_REQUEST);
+            return new ResponseEntity<>(ResponseUtil.buildResponse(HttpStatus.OK.value(), "No Ship Found.",
+                    new HashMap<>()), HttpStatus.OK);
         } else {
             return new ResponseEntity<>(ResponseUtil.buildResponse(HttpStatus.OK.value(), "Ship Updated Successfully.",
                     updateShip), HttpStatus.OK);
