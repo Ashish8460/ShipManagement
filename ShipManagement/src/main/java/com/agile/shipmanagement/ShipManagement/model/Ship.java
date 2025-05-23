@@ -49,4 +49,10 @@ public class Ship extends BaseEntityModel {
     @OneToMany(mappedBy = "ship", cascade = CascadeType.ALL,orphanRemoval = true)
     @JsonBackReference ///  Stop Getting recurring values inside Ship crew list
     private List<Crew> crewList = new ArrayList<>();
+
+
+    @OneToMany(mappedBy = "ship", cascade = CascadeType.ALL)
+    private List<Route> routes = new ArrayList<>();
+
+
 }

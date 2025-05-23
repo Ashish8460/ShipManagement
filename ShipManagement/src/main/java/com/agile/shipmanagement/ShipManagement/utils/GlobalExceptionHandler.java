@@ -1,4 +1,5 @@
 package com.agile.shipmanagement.ShipManagement.utils;
+
 import com.agile.shipmanagement.ShipManagement.model.ErrorResponse;
 import com.fasterxml.jackson.databind.exc.InvalidFormatException;
 import jakarta.persistence.EntityNotFoundException;
@@ -10,6 +11,9 @@ import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+
+import java.util.Objects;
+import java.util.stream.Collectors;
 
 @RestControllerAdvice
 public class GlobalExceptionHandler {
@@ -58,6 +62,16 @@ public class GlobalExceptionHandler {
         return new ResponseEntity<>(new ErrorResponse(400, message), HttpStatus.BAD_REQUEST);
     }
 
+    private String extractColumnNameFromSQLMessage(String msg) {
+        try {
+            int start = msg.indexOf("column \"") + 8;
+            int end = msg.indexOf("\"", start);
+            return msg.substring(start, end);
+        } catch (Exception e) {
+            return "unknown";
+        }
+    }
+
 
     @ExceptionHandler(RuntimeException.class)
     public ResponseEntity<ErrorResponse> handleRuntimeException(RuntimeException ex) {
@@ -90,6 +104,15 @@ public class GlobalExceptionHandler {
                     );
                     break;
                 }
+            } else if (Objects.equals(ex.getCause().getClass(), org.hibernate.exception.ConstraintViolationException.class)) {
+                org.hibernate.exception.ConstraintViolationException cve =
+                        (org.hibernate.exception.ConstraintViolationException) ex.getCause();
+                String sqlMessage = cve.getSQLException().getMessage();
+                String column = extractColumnNameFromSQLMessage(sqlMessage);
+
+                message = "Missing or invalid required field: '" + column + "'";
+
+                return ResponseEntity.badRequest().body(new ErrorResponse(400, message));
             }
             rootCause = rootCause.getCause();
         }

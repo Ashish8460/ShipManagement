@@ -1,12 +1,14 @@
 package com.agile.shipmanagement.ShipManagement.controllers;
 
 import com.agile.shipmanagement.ShipManagement.model.Crew;
+import com.agile.shipmanagement.ShipManagement.model.PositionUpdateGroup;
 import com.agile.shipmanagement.ShipManagement.service.CrewService;
 import com.agile.shipmanagement.ShipManagement.utils.ResponseUtil;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.HashMap;
@@ -22,7 +24,7 @@ public class CrewController {
 
     @PostMapping("/{id}/crew")
     private ResponseEntity<?> addCrew(@PathVariable("id") Integer id, @Valid @RequestBody Crew crew) {
-        Crew addCrewToShip = crewService.createAndAddCrewToShip(id,crew);
+        Crew addCrewToShip = crewService.createAndAddCrewToShip(id, crew);
         if (null == addCrewToShip) {
             return new ResponseEntity<>(ResponseUtil.buildResponse(HttpStatus.BAD_REQUEST.value(), "No Crew Added.",
                     new HashMap<>()), HttpStatus.BAD_REQUEST);
@@ -42,6 +44,33 @@ public class CrewController {
         } else {
             return new ResponseEntity<>(ResponseUtil.buildResponse(HttpStatus.OK.value(), "Crew Members Fetched Successfully.",
                     creList), HttpStatus.OK);
+        }
+    }
+
+
+    @PutMapping("/{id}/crew/{crewId}")
+    private ResponseEntity<?> updateCrewPosition(@PathVariable("id") Integer id, @PathVariable("crewId") Integer crewId, @Validated(PositionUpdateGroup.class) @RequestBody Crew crew) {
+        Crew updateCrewObj = crewService.updateCrewPosition(id, crewId, crew);
+        if (null == updateCrewObj) {
+            return new ResponseEntity<>(ResponseUtil.buildResponse(HttpStatus.BAD_REQUEST.value(), "No Crew Updated.",
+                    new HashMap<>()), HttpStatus.BAD_REQUEST);
+        } else {
+            return new ResponseEntity<>(ResponseUtil.buildResponse(HttpStatus.OK.value(), "Crew Updated Successfully.",
+                    updateCrewObj), HttpStatus.OK);
+        }
+
+    }
+
+
+    @DeleteMapping("/{id}/crew/{crewId}")
+    private ResponseEntity<?> deleteCrewFromShip(@PathVariable("id") Integer id, @PathVariable("crewId") Integer crewId) {
+        boolean isDeleted = crewService.deleteCrewFromShip(id, crewId);
+        if (!isDeleted) {
+            return new ResponseEntity<>(ResponseUtil.buildResponse(HttpStatus.BAD_REQUEST.value(), "No Crew Deleted.",
+                    new HashMap<>()), HttpStatus.BAD_REQUEST);
+        } else {
+            return new ResponseEntity<>(ResponseUtil.buildResponse(HttpStatus.OK.value(), "Crew Deleted Successfully.",
+                    new HashMap<>()), HttpStatus.OK);
         }
 
     }

@@ -24,7 +24,7 @@ public class Crew extends  BaseEntityModel{
     @Size(min = 3,message = "Name must contains at least 3 characters.")
     private String name;
 
-    @NotBlank(message = "Position must not be blank.")
+    @NotBlank(message = "Position must not be blank.", groups = PositionUpdateGroup.class)
     @Size(min = 3,message = "Position must contains at least 3 characters.")
     private String position;
 
@@ -32,3 +32,5 @@ public class Crew extends  BaseEntityModel{
     @JoinColumn(name = "ship_id") // foreign key column in Crew table
     private Ship ship;
 }
+
+
