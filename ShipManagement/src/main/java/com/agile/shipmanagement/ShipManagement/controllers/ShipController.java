@@ -3,6 +3,8 @@ package com.agile.shipmanagement.ShipManagement.controllers;
 import com.agile.shipmanagement.ShipManagement.model.Ship;
 import com.agile.shipmanagement.ShipManagement.service.ShipService;
 import com.agile.shipmanagement.ShipManagement.utils.ResponseUtil;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -15,6 +17,7 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/ships")
+@Tag(name = "Ship Management", description = "Operations pertaining to Ship Management")
 public class ShipController {
 
 
@@ -30,6 +33,7 @@ public class ShipController {
     }
 
     @GetMapping("/allShips")
+
     private ResponseEntity<?> getAllShips() {
         List<Ship> allShips = shipService.getAllShips();
         if (allShips.isEmpty()) {
@@ -42,6 +46,7 @@ public class ShipController {
     }
 
     @GetMapping("/{id}")
+    @Operation(summary = "Get Ship by ID", description = "Returns a ship object by its ID")
     private ResponseEntity<?> getShipDetailsById(@PathVariable("id") Integer id) {
         Ship shipById = shipService.getShipById(id);
         if (shipById == null) {

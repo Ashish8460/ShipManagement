@@ -30,6 +30,7 @@ public class Crew extends  BaseEntityModel{
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "ship_id") // foreign key column in Crew table
+    @JsonBackReference // ✅ This side is skipped during serialization
     private Ship ship;
 }
 

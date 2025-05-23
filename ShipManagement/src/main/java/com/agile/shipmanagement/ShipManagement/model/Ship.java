@@ -52,6 +52,7 @@ public class Ship extends BaseEntityModel {
 
 
     @OneToMany(mappedBy = "ship", cascade = CascadeType.ALL)
+    @JsonManagedReference
     private List<Route> routes = new ArrayList<>();
 
 

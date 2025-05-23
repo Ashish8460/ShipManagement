@@ -5,6 +5,7 @@ import com.agile.shipmanagement.ShipManagement.model.Route;
 import com.agile.shipmanagement.ShipManagement.repository.ShipRepository;
 import com.agile.shipmanagement.ShipManagement.service.RouteService;
 import com.agile.shipmanagement.ShipManagement.utils.ResponseUtil;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -18,6 +19,7 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/ships")
+@Tag(name = "Route Management", description = "Operations pertaining to Route Management")
 public class RouteController {
 
     @Autowired
@@ -30,7 +32,7 @@ public class RouteController {
     private ResponseEntity<?> assignRouteToShip(@PathVariable("id") Integer shipId, @Validated @RequestBody Route route) {
         Route routeAdded = routeService.assignRouteToShip(shipId, route);
         if (null == routeAdded) {
-            return new ResponseEntity<>(ResponseUtil.buildResponse(HttpStatus.BAD_REQUEST.value(), "No Route Added.",
+            return new ResponseEntity<>(ResponseUtil.buildResponse(HttpStatus.OK.value(), "No Route Added.",
                     new HashMap<>()), HttpStatus.OK);
         } else {
             return new ResponseEntity<>(ResponseUtil.buildResponse(HttpStatus.OK.value(), "Route Added Successfully.",
@@ -57,7 +59,7 @@ public class RouteController {
 
         Route routeUpdated = routeService.updateRoute(shipId, routeId, route);
         if (null == routeUpdated) {
-            return new ResponseEntity<>(ResponseUtil.buildResponse(HttpStatus.BAD_REQUEST.value(), "No Route Updated.",
+            return new ResponseEntity<>(ResponseUtil.buildResponse(HttpStatus.OK.value(), "No Route Updated.",
                     new HashMap<>()), HttpStatus.OK);
         } else {
             return new ResponseEntity<>(ResponseUtil.buildResponse(HttpStatus.OK.value(), "Route Updated Successfully.",
@@ -69,7 +71,7 @@ public class RouteController {
     private ResponseEntity<?> deleteRouteForShip(@PathVariable("id") Integer shipId, @PathVariable("routeId") Integer routeId) {
         boolean isDeleted = routeService.deleteRouteById(shipId, routeId);
         if (!isDeleted) {
-            return new ResponseEntity<>(ResponseUtil.buildResponse(HttpStatus.BAD_REQUEST.value(), "No Route Deleted.",
+            return new ResponseEntity<>(ResponseUtil.buildResponse(HttpStatus.OK.value(), "No Route Deleted.",
                     new HashMap<>()), HttpStatus.OK);
         } else {
             return new ResponseEntity<>(ResponseUtil.buildResponse(HttpStatus.OK.value(), "Route Deleted Successfully.",

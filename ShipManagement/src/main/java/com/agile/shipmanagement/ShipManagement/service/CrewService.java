@@ -26,10 +26,8 @@ public class CrewService {
     public Crew createAndAddCrewToShip(Integer shipId, Crew crew) {
 
         Ship ship = shipRepository.findById(shipId).orElseThrow(() -> new EntityNotFoundException("Ship not found"));
-        if (null != ship) {
-            crew.setShip(ship);
-            crewRepository.save(crew);
-        }
+        crew.setShip(ship);
+        crewRepository.save(crew);
         return crew;
     }
 
@@ -48,9 +46,7 @@ public class CrewService {
         shipRepository.findById(shipId).orElseThrow(() -> new EntityNotFoundException("Ship not found"));
 
         Crew crewDeleted = crewRepository.findCrewByShip_ShipIdAndCrewId(shipId, crewId).orElseThrow(() -> new EntityNotFoundException("Crew not found"));
-        if (null != crewDeleted) {
-            crewRepository.delete(crewDeleted);
-        }
+        crewRepository.delete(crewDeleted);
         return crewDeleted;
     }
 
@@ -60,13 +56,9 @@ public class CrewService {
         shipRepository.findById(shipId).orElseThrow(() -> new EntityNotFoundException("Ship not found"));
 
         Crew crewDeleted = crewRepository.findCrewByShip_ShipIdAndCrewId(shipId, crewId).orElseThrow(() -> new EntityNotFoundException("Crew not found"));
-        if (null != crewDeleted) {
-            crewRepository.delete(crewDeleted);
-            isDeleted = true;
-            return isDeleted;
-        } else {
-            return isDeleted;
-        }
+        crewRepository.delete(crewDeleted);
+        isDeleted = true;
+        return isDeleted;
 
     }
 }
