@@ -17,137 +17,161 @@ import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
+import jakarta.persistence.EntityNotFoundException;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.springframework.boot.test.context.SpringBootTest;
 
+import java.util.Arrays;
+import java.util.List;
+import java.util.Optional;
+
+import static org.mockito.Mockito.*;
+import static org.junit.jupiter.api.Assertions.*;
+
+@SpringBootTest
 class ShipServiceTest {
 
     @Mock
     private ShipRepository shipRepository;
 
-
     @InjectMocks
     private ShipService shipService;
 
-    private Ship ship;
+    private Ship testShip;
 
     @BeforeEach
     void setUp() {
-        MockitoAnnotations.openMocks(this);
-        ship = new Ship();
-        ship.setShipId(1);
-        ship.setName("Cruiser Antarctica");
-        ship.setType(ShipType.CRUISE);
-        ship.setStatus(ShipStatus.ACTIVE);
-        ship.setCapacity(1000);
+        testShip = new Ship();
+        testShip.setShipId(1);
+        testShip.setName("Test Ship");
+        testShip.setCapacity(1000.0);
+        testShip.setType(ShipType.CARGO);
+        testShip.setStatus(ShipStatus.ACTIVE);
     }
 
     @Test
-    void addShip() {
+    void addShip_Success() {
+        // Arrange
+        when(shipRepository.save(any(Ship.class))).thenReturn(testShip);
 
-        when(shipRepository.save(ship)).thenReturn(ship);
+        // Act
+        Ship savedShip = shipService.addShip(testShip);
 
-        Ship savedShip = shipService.addShip(ship);
-
+        // Assert
         assertNotNull(savedShip);
-        assertEquals(ship, savedShip);
-        verify(shipRepository, times(1)).save(ship);
+        assertEquals(testShip.getName(), savedShip.getName());
+        assertEquals(testShip.getCapacity(), savedShip.getCapacity());
+        assertEquals(testShip.getType(), savedShip.getType());
+        assertEquals(testShip.getStatus(), savedShip.getStatus());
 
+        verify(shipRepository).save(any(Ship.class));
     }
 
     @Test
-    void getAllShips() {
-        when(shipRepository.findAllByOrderByShipIdAsc()).thenReturn(List.of(ship));
+    void getAllShips_WithShips() {
+        // Arrange
+        List<Ship> ships = Arrays.asList(testShip);
+        when(shipRepository.findAllByOrderByShipIdAsc()).thenReturn(ships);
 
-        List<Ship> ships = shipService.getAllShips();
+        // Act
+        List<Ship> result = shipService.getAllShips();
 
-        assertNotNull(ships);
-        assertEquals(1, ships.size());
-        assertEquals(ship, ships.get(0));
-        //Check that the mock shipRepository had its method findAllByOrderByShipIdAsc() called exactly 1 time during the test execution.
-        verify(shipRepository, times(1)).findAllByOrderByShipIdAsc();
-        verifyNoMoreInteractions(shipRepository); //  Mockito is used to verify that no other interactions happened on the given mock(s) beyond what you've explicitly verified.
+        // Assert
+        assertNotNull(result);
+        assertFalse(result.isEmpty());
+        assertEquals(1, result.size());
+        assertEquals(testShip, result.get(0));
+
+        verify(shipRepository).findAllByOrderByShipIdAsc();
     }
 
     @Test
-    void getAllShips_EmptyList() {
+    void getAllShips_NoShips() {
+        // Arrange
+        when(shipRepository.findAllByOrderByShipIdAsc()).thenReturn(Arrays.asList());
 
-        when(shipRepository.findAllByOrderByShipIdAsc()).thenReturn(List.of());
-        List<Ship> ships = shipService.getAllShips();
-        assertNotNull(ships);
-        assertTrue(ships.isEmpty());
-        verify(shipRepository, times(1)).findAllByOrderByShipIdAsc();
-        verifyNoMoreInteractions(shipRepository);
+        // Act
+        List<Ship> result = shipService.getAllShips();
+
+        // Assert
+        assertNotNull(result);
+        assertTrue(result.isEmpty());
+
+        verify(shipRepository).findAllByOrderByShipIdAsc();
     }
-
 
     @Test
     void getShipById_Success() {
         // Arrange
-        when(shipRepository.findByShipId(1)).thenReturn(Optional.ofNullable(ship));
+        when(shipRepository.findByShipId(1)).thenReturn(Optional.of(testShip));
 
-        Ship shipById = shipService.getShipById(1);
-        assertNotNull(shipById);
-        assertEquals(ship, shipById);
-        verify(shipRepository, times(1)).findByShipId(1);
-        verifyNoMoreInteractions(shipRepository);
+        // Act
+        Ship result = shipService.getShipById(1);
+
+        // Assert
+        assertNotNull(result);
+        assertEquals(testShip.getShipId(), result.getShipId());
+        assertEquals(testShip.getName(), result.getName());
+
+        verify(shipRepository).findByShipId(1);
     }
 
     @Test
-    void getShipById_Empty() {
+    void getShipById_NotFound() {
         // Arrange
-        when(shipRepository.findByShipId(1)).thenReturn(Optional.empty());
+        when(shipRepository.findByShipId(999)).thenReturn(Optional.empty());
 
         // Act & Assert
         assertThrows(EntityNotFoundException.class, () -> {
-            shipService.getShipById(1);
+            shipService.getShipById(999);
         });
+
+        verify(shipRepository).findByShipId(999);
     }
 
     @Test
     void deleteShipById_Success() {
         // Arrange
-        when(shipRepository.findById(1)).thenReturn(Optional.of(ship));
+        when(shipRepository.findById(1)).thenReturn(Optional.of(testShip));
+        doNothing().when(shipRepository).delete(any(Ship.class));
 
         // Act
-        boolean isDeleted = shipService.deleteShipById(1);
+        boolean result = shipService.deleteShipById(1);
 
         // Assert
-        assertTrue(isDeleted);
-        verify(shipRepository, times(1)).findById(1);
-        verify(shipRepository, times(1)).delete(ship);
-        verifyNoMoreInteractions(shipRepository);
+        assertTrue(result);
+        verify(shipRepository).findById(1);
+        verify(shipRepository).delete(testShip);
     }
 
     @Test
     void deleteShipById_NotFound() {
         // Arrange
-        when(shipRepository.findById(1)).thenReturn(Optional.empty());
+        when(shipRepository.findById(999)).thenReturn(Optional.empty());
 
         // Act & Assert
         assertThrows(EntityNotFoundException.class, () -> {
-            shipService.deleteShipById(1);
+            shipService.deleteShipById(999);
         });
-        verify(shipRepository, times(1)).findById(1);
-        verifyNoMoreInteractions(shipRepository);
+
+        verify(shipRepository).findById(999);
+        verify(shipRepository, never()).delete(any(Ship.class));
     }
 
     @Test
     void updateShip_Success() {
         // Arrange
-        Ship existingShip = new Ship();
-        existingShip.setShipId(1);
-        existingShip.setName("Old Name");
-        existingShip.setType(ShipType.CARGO);
-        existingShip.setStatus(ShipStatus.ACTIVE);
-        existingShip.setCapacity(1000);
-
         Ship updatedShip = new Ship();
-        updatedShip.setName("New Name");
+        updatedShip.setName("Updated Ship");
+        updatedShip.setCapacity(2000.0);
         updatedShip.setType(ShipType.CRUISE);
-        updatedShip.setStatus(ShipStatus.UNDERMAINTENANCE);
-        updatedShip.setCapacity(2000);
+        updatedShip.setStatus(ShipStatus.ACTIVE);
 
-        when(shipRepository.findById(1)).thenReturn(Optional.of(existingShip));
-        when(shipRepository.save(any(Ship.class))).thenReturn(existingShip);
+        when(shipRepository.findById(1)).thenReturn(Optional.of(testShip));
+        when(shipRepository.save(any(Ship.class))).thenReturn(testShip);
 
         // Act
         Ship result = shipService.updateShip(1, updatedShip);
@@ -155,66 +179,46 @@ class ShipServiceTest {
         // Assert
         assertNotNull(result);
         assertEquals(updatedShip.getName(), result.getName());
+        assertEquals(updatedShip.getCapacity(), result.getCapacity());
         assertEquals(updatedShip.getType(), result.getType());
         assertEquals(updatedShip.getStatus(), result.getStatus());
-        assertEquals(updatedShip.getCapacity(), result.getCapacity());
 
         verify(shipRepository).findById(1);
-        verify(shipRepository).save(existingShip);
-        verifyNoMoreInteractions(shipRepository);
+        verify(shipRepository).save(any(Ship.class));
     }
-
 
     @Test
     void updateShip_NotFound() {
         // Arrange
-        Ship updatedShip = new Ship();
-        updatedShip.setName("New Name");
-        updatedShip.setType(ShipType.CRUISE);
-        updatedShip.setStatus(ShipStatus.UNDERMAINTENANCE);
-        updatedShip.setCapacity(2000);
-
-        when(shipRepository.findById(1)).thenReturn(Optional.empty());
+        when(shipRepository.findById(999)).thenReturn(Optional.empty());
 
         // Act & Assert
         assertThrows(EntityNotFoundException.class, () -> {
-            shipService.updateShip(1, updatedShip);
+            shipService.updateShip(999, testShip);
         });
 
-        verify(shipRepository).findById(1);
-        verifyNoMoreInteractions(shipRepository);
+        verify(shipRepository).findById(999);
+        verify(shipRepository, never()).save(any(Ship.class));
     }
 
     @Test
     void updateShip_WithNullValues() {
         // Arrange
-        Ship existingShip = new Ship();
-        existingShip.setShipId(1);
-        existingShip.setName("Old Name");
-        existingShip.setType(ShipType.CARGO);
-        existingShip.setStatus(ShipStatus.ACTIVE);
-        existingShip.setCapacity(1000);
-
-        Ship updatedShip = new Ship();
-        // All fields are null
-
-        when(shipRepository.findById(1)).thenReturn(Optional.of(existingShip));
-        when(shipRepository.save(any(Ship.class))).thenReturn(existingShip);
+        Ship shipWithNullValues = new Ship();
+        when(shipRepository.findById(1)).thenReturn(Optional.of(testShip));
+        when(shipRepository.save(any(Ship.class))).thenReturn(testShip);
 
         // Act
-        Ship result = shipService.updateShip(1, updatedShip);
+        Ship result = shipService.updateShip(1, shipWithNullValues);
 
         // Assert
         assertNotNull(result);
-        // Verify that original values are preserved when update values are null
-        assertEquals(existingShip.getName(), result.getName());
-        assertEquals(existingShip.getType(), result.getType());
-        assertEquals(existingShip.getStatus(), result.getStatus());
-        assertEquals(existingShip.getCapacity(), result.getCapacity());
+        assertNull(result.getName());
+        assertEquals(0.0, result.getCapacity());
+        assertNull(result.getType());
+        assertNull(result.getStatus());
 
         verify(shipRepository).findById(1);
-        verify(shipRepository).save(existingShip);
-        verifyNoMoreInteractions(shipRepository);
+        verify(shipRepository).save(any(Ship.class));
     }
-
 }

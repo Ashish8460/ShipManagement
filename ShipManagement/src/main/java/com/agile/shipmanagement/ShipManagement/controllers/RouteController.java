@@ -29,7 +29,7 @@ public class RouteController {
     ShipRepository shipRepository;
 
     @PostMapping("/{id}/routes")
-    private ResponseEntity<?> assignRouteToShip(@PathVariable("id") Integer shipId, @Validated @RequestBody Route route) {
+    ResponseEntity<?> assignRouteToShip(@PathVariable("id") Integer shipId, @Validated @RequestBody Route route) {
         Route routeAdded = routeService.assignRouteToShip(shipId, route);
         if (null == routeAdded) {
             return new ResponseEntity<>(ResponseUtil.buildResponse(HttpStatus.OK.value(), "No Route Added.",
@@ -42,7 +42,7 @@ public class RouteController {
 
 
     @GetMapping("/{id}/routes")
-    private ResponseEntity<?> getRouteByShipId(@PathVariable("id") Integer shipId) {
+    ResponseEntity<?> getRouteByShipId(@PathVariable("id") Integer shipId) {
         List<Route> routeList = routeService.getRouteByShipId(shipId);
         if (routeList.isEmpty()) {
             return new ResponseEntity<>(ResponseUtil.buildResponse(HttpStatus.OK.value(), "No Routes Found.",
@@ -55,7 +55,7 @@ public class RouteController {
     }
 
     @PutMapping("/{id}/routes/{routeId}")
-    private ResponseEntity<?> updateRoute(@PathVariable("id") Integer shipId, @PathVariable("routeId") Integer routeId, @Valid @RequestBody Route route) {
+    ResponseEntity<?> updateRoute(@PathVariable("id") Integer shipId, @PathVariable("routeId") Integer routeId, @Valid @RequestBody Route route) {
 
         Route routeUpdated = routeService.updateRoute(shipId, routeId, route);
         if (null == routeUpdated) {
@@ -68,7 +68,7 @@ public class RouteController {
     }
 
     @DeleteMapping("/{id}/routes/{routeId}")
-    private ResponseEntity<?> deleteRouteForShip(@PathVariable("id") Integer shipId, @PathVariable("routeId") Integer routeId) {
+    ResponseEntity<?> deleteRouteForShip(@PathVariable("id") Integer shipId, @PathVariable("routeId") Integer routeId) {
         boolean isDeleted = routeService.deleteRouteById(shipId, routeId);
         if (!isDeleted) {
             return new ResponseEntity<>(ResponseUtil.buildResponse(HttpStatus.OK.value(), "No Route Deleted.",

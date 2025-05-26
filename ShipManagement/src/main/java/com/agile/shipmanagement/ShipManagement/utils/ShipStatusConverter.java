@@ -13,7 +13,6 @@ public class ShipStatusConverter implements AttributeConverter<ShipStatus, Strin
         return switch (status) {
             case ACTIVE -> "Active";
             case UNDERMAINTENANCE -> "Under Maintenance";
-            default -> throw new IllegalArgumentException("Unknown " + status + "Values Should be Active or Under Maintenance");
         };
     }
 

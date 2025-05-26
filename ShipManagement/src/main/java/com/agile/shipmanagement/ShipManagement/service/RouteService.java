@@ -85,9 +85,7 @@ public class RouteService {
                 isDeleted = true;
                 return isDeleted;
             }
-            return  false;
-        }else{
-            return  false;
         }
+        return  false;
     }
 }

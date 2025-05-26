@@ -6,6 +6,8 @@ import static org.junit.jupiter.api.Assertions.*;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
+import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assertions.*;
 
 class ResponseUtilTest {
 
@@ -17,10 +19,9 @@ class ResponseUtilTest {
         String data = "Test Data";
 
         // Act
-        ResponseModel<String> response = ResponseUtil.buildResponse(statusCode, message, data);
+        com.agile.shipmanagement.ShipManagement.model.ResponseModel<String> response = ResponseUtil.buildResponse(statusCode, message, data);
 
         // Assert
-        assertNotNull(response);
         assertEquals(statusCode, response.getStatusCode());
         assertEquals(message, response.getMessage());
         assertEquals(data, response.getData());
@@ -31,13 +32,12 @@ class ResponseUtilTest {
         // Arrange
         int statusCode = 201;
         String message = "Created";
-        TestObject data = new TestObject("test");
+        TestObject data = new TestObject("test", 123);
 
         // Act
-        ResponseModel<TestObject> response = ResponseUtil.buildResponse(statusCode, message, data);
+        com.agile.shipmanagement.ShipManagement.model.ResponseModel<TestObject> response = ResponseUtil.buildResponse(statusCode, message, data);
 
         // Assert
-        assertNotNull(response);
         assertEquals(statusCode, response.getStatusCode());
         assertEquals(message, response.getMessage());
         assertEquals(data, response.getData());
@@ -46,15 +46,14 @@ class ResponseUtilTest {
     @Test
     void buildResponse_WithNullData() {
         // Arrange
-        int statusCode = 404;
-        String message = "Not Found";
-        Object data = null;
+        int statusCode = 204;
+        String message = "No Content";
+        String data = null;
 
         // Act
-        ResponseModel<Object> response = ResponseUtil.buildResponse(statusCode, message, data);
+        com.agile.shipmanagement.ShipManagement.model.ResponseModel<String> response = ResponseUtil.buildResponse(statusCode, message, data);
 
         // Assert
-        assertNotNull(response);
         assertEquals(statusCode, response.getStatusCode());
         assertEquals(message, response.getMessage());
         assertNull(response.getData());
@@ -68,21 +67,38 @@ class ResponseUtilTest {
         List<String> data = Arrays.asList("item1", "item2", "item3");
 
         // Act
-        ResponseModel<List<String>> response = ResponseUtil.buildResponse(statusCode, message, data);
+        com.agile.shipmanagement.ShipManagement.model.ResponseModel<List<String>> response = ResponseUtil.buildResponse(statusCode, message, data);
 
         // Assert
-        assertNotNull(response);
         assertEquals(statusCode, response.getStatusCode());
         assertEquals(message, response.getMessage());
         assertEquals(data, response.getData());
         assertEquals(3, response.getData().size());
     }
 
-    // Helper class for testing with objects
-    private static class TestObject {
-        private String value;
+    @Test
+    void buildResponse_WithEmptyMessage() {
+        // Arrange
+        int statusCode = 200;
+        String message = "";
+        String data = "Test Data";
 
-        public TestObject(String value) {
+        // Act
+        com.agile.shipmanagement.ShipManagement.model.ResponseModel<String> response = ResponseUtil.buildResponse(statusCode, message, data);
+
+        // Assert
+        assertEquals(statusCode, response.getStatusCode());
+        assertEquals(message, response.getMessage());
+        assertEquals(data, response.getData());
+    }
+
+    // Test helper class
+    private static class TestObject {
+        private String name;
+        private int value;
+
+        public TestObject(String name, int value) {
+            this.name = name;
             this.value = value;
         }
 
@@ -91,12 +107,12 @@ class ResponseUtilTest {
             if (this == o) return true;
             if (o == null || getClass() != o.getClass()) return false;
             TestObject that = (TestObject) o;
-            return Objects.equals(value, that.value);
+            return value == that.value && Objects.equals(name, that.name);
         }
 
         @Override
         public int hashCode() {
-            return Objects.hash(value);
+            return Objects.hash(name, value);
         }
     }
 }

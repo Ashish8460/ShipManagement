@@ -62,7 +62,7 @@ public class GlobalExceptionHandler {
         return new ResponseEntity<>(new ErrorResponse(400, message), HttpStatus.BAD_REQUEST);
     }
 
-    private String extractColumnNameFromSQLMessage(String msg) {
+    public String extractColumnNameFromSQLMessage(String msg) {
         try {
             int start = msg.indexOf("column \"") + 8;
             int end = msg.indexOf("\"", start);

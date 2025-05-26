@@ -26,15 +26,14 @@ public class ShipController {
 
 
     @PostMapping("/addShip")
-    private ResponseEntity<?> addShip(@Valid @RequestBody Ship ship) {
+    ResponseEntity<?> addShip(@Valid @RequestBody Ship ship) {
         Ship ship1 = shipService.addShip(ship);
         return new ResponseEntity<>(ResponseUtil.buildResponse(200, "Ship Created Successfully.",
                 ship1), HttpStatus.OK);
     }
 
     @GetMapping("/allShips")
-
-    private ResponseEntity<?> getAllShips() {
+    ResponseEntity<?> getAllShips() {
         List<Ship> allShips = shipService.getAllShips();
         if (allShips.isEmpty()) {
             return new ResponseEntity<>(ResponseUtil.buildResponse(HttpStatus.OK.value(), "No Ships Found.",
@@ -47,7 +46,7 @@ public class ShipController {
 
     @GetMapping("/{id}")
     @Operation(summary = "Get Ship by ID", description = "Returns a ship object by its ID")
-    private ResponseEntity<?> getShipDetailsById(@PathVariable("id") Integer id) {
+    ResponseEntity<?> getShipDetailsById(@PathVariable("id") Integer id) {
         Ship shipById = shipService.getShipById(id);
         if (shipById == null) {
             return new ResponseEntity<>(ResponseUtil.buildResponse(HttpStatus.OK.value(), "No Ship Found.",
@@ -59,7 +58,7 @@ public class ShipController {
     }
 
     @DeleteMapping("/{id}")
-    private ResponseEntity<?> deleteShipById(@PathVariable("id") Integer id) {
+    ResponseEntity<?> deleteShipById(@PathVariable("id") Integer id) {
         boolean isDeleted = shipService.deleteShipById(id);
         if (!isDeleted) {
             return new ResponseEntity<>(ResponseUtil.buildResponse(HttpStatus.OK.value(), "No Ship Found.",
@@ -71,7 +70,7 @@ public class ShipController {
     }
 
     @PutMapping("/{id}")
-    private ResponseEntity<?> updateShipById(@PathVariable("id") Integer id, @RequestBody Ship ship) {
+    ResponseEntity<?> updateShipById(@PathVariable("id") Integer id, @RequestBody Ship ship) {
         Ship updateShip = shipService.updateShip(id, ship);
         if (null == updateShip) {
             return new ResponseEntity<>(ResponseUtil.buildResponse(HttpStatus.OK.value(), "No Ship Found.",

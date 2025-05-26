@@ -20,6 +20,21 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
+import jakarta.persistence.EntityNotFoundException;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.springframework.boot.test.context.SpringBootTest;
+
+import java.util.Arrays;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
+
+import static org.mockito.Mockito.*;
+import static org.junit.jupiter.api.Assertions.*;
+
 class CrewServiceTest {
 
     @Mock
@@ -31,179 +46,218 @@ class CrewServiceTest {
     @InjectMocks
     private CrewService crewService;
 
-    private Ship ship;
-    private Crew crew;
+    private Ship testShip;
+    private Crew testCrew;
+    private Integer testShipId;
+    private Integer testCrewId;
 
     @BeforeEach
     void setUp() {
+        testShipId = 1;
+        testCrewId = 1;
+
+        testShip = new Ship();
+        testShip.setShipId(testShipId);
+        testShip.setName("Test Ship");
+
+        testCrew = new Crew();
+        testCrew.setCrewId(testCrewId);
+        testCrew.setName("Test Crew");
+        testCrew.setShip(testShip);
         MockitoAnnotations.openMocks(this);
-        
-        ship = new Ship();
-        ship.setShipId(1);
-        
-        crew = new Crew();
-        crew.setCrewId(1);
+
     }
 
     @Test
-    void createAndAddCrewToShip_Success() {
+    void testCreateAndAddCrewToShip_success() {
         // Arrange
-        when(shipRepository.findById(1)).thenReturn(Optional.of(ship));
-        when(crewRepository.save(any(Crew.class))).thenReturn(crew);
+        Integer shipId = 1;
+        Ship mockShip = new Ship();
+        mockShip.setShipId(shipId);
+        mockShip.setName("Evergreen");
+
+        Crew mockCrew = new Crew();
+        mockCrew.setName("John");
+
+        when(shipRepository.findById(shipId)).thenReturn(Optional.of(mockShip));
+        when(crewRepository.save(any(Crew.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
         // Act
-        Crew result = crewService.createAndAddCrewToShip(1, crew);
+        Crew savedCrew = crewService.createAndAddCrewToShip(shipId, mockCrew);
 
         // Assert
-        assertNotNull(result);
-        assertEquals(ship, result.getShip());
-        verify(crewRepository, times(1)).save(crew);
+        assertNotNull(savedCrew);
+        assertEquals("John", savedCrew.getName());
+        assertEquals(mockShip, savedCrew.getShip());
+        verify(shipRepository, times(1)).findById(shipId);
+        verify(crewRepository, times(1)).save(mockCrew);
     }
 
     @Test
-    void createAndAddCrewToShip_ShipNotFound() {
+    void testCreateAndAddCrewToShip_shipNotFound() {
         // Arrange
-        when(shipRepository.findById(1)).thenReturn(Optional.empty());
+        Integer shipId = 99;
+        Crew crew = new Crew();
+
+        when(shipRepository.findById(shipId)).thenReturn(Optional.empty());
 
         // Act & Assert
-        assertThrows(EntityNotFoundException.class, () -> {
-            crewService.createAndAddCrewToShip(1, crew);
+        EntityNotFoundException exception = assertThrows(EntityNotFoundException.class, () -> {
+            crewService.createAndAddCrewToShip(shipId, crew);
         });
-        verify(crewRepository, never()).save(any(Crew.class));
+
+        assertEquals("Ship not found", exception.getMessage());
+        verify(shipRepository, times(1)).findById(shipId);
+        verifyNoInteractions(crewRepository);
     }
 
     @Test
-    void getCrewByShipId_Success() {
+    void getCrewByShipId_WithCrew() {
         // Arrange
-        List<Crew> crewList = Arrays.asList(new Crew(), new Crew());
-        when(shipRepository.findById(1)).thenReturn(Optional.of(ship));
-        when(crewRepository.findAllByShip_ShipId(1)).thenReturn(crewList);
+        List<Crew> crewList = Arrays.asList(testCrew);
+        when(shipRepository.findById(testShipId)).thenReturn(Optional.of(testShip));
+        when(crewRepository.findAllByShip_ShipId(testShipId)).thenReturn(crewList);
 
         // Act
-        List<Crew> result = crewService.getCrewByShipId(1);
+        List<Crew> result = crewService.getCrewByShipId(testShipId);
 
         // Assert
         assertNotNull(result);
-        assertEquals(2, result.size());
-        verify(crewRepository, times(1)).findAllByShip_ShipId(1);
+        assertFalse(result.isEmpty());
+        assertEquals(1, result.size());
+        assertEquals(testCrew, result.get(0));
+
+        verify(shipRepository).findById(testShipId);
+        verify(crewRepository).findAllByShip_ShipId(testShipId);
     }
 
     @Test
-    void getCrewByShipId_EmptyList() {
+    void getCrewByShipId_NoCrew() {
         // Arrange
-        when(shipRepository.findById(1)).thenReturn(Optional.of(ship));
-        when(crewRepository.findAllByShip_ShipId(1)).thenReturn(new ArrayList<>());
+        when(shipRepository.findById(testShipId)).thenReturn(Optional.of(testShip));
+        when(crewRepository.findAllByShip_ShipId(testShipId)).thenReturn(new ArrayList<>());
 
         // Act
-        List<Crew> result = crewService.getCrewByShipId(1);
+        List<Crew> result = crewService.getCrewByShipId(testShipId);
 
         // Assert
         assertNotNull(result);
         assertTrue(result.isEmpty());
+
+        verify(shipRepository).findById(testShipId);
+        verify(crewRepository).findAllByShip_ShipId(testShipId);
     }
 
     @Test
     void getCrewByShipId_ShipNotFound() {
         // Arrange
-        when(shipRepository.findById(1)).thenReturn(Optional.empty());
+        when(shipRepository.findById(testShipId)).thenReturn(Optional.empty());
 
         // Act & Assert
         assertThrows(EntityNotFoundException.class, () -> {
-            crewService.getCrewByShipId(1);
+            crewService.getCrewByShipId(testShipId);
         });
+
+        verify(shipRepository).findById(testShipId);
+        verify(crewRepository, never()).findAllByShip_ShipId(any());
     }
 
     @Test
     void updateCrewPosition_Success() {
         // Arrange
-        when(shipRepository.findById(1)).thenReturn(Optional.of(ship));
-        when(crewRepository.findCrewByShip_ShipIdAndCrewId(1, 1)).thenReturn(Optional.of(crew));
+        when(shipRepository.findById(testShipId)).thenReturn(Optional.of(testShip));
+        when(crewRepository.findCrewByShip_ShipIdAndCrewId(testShipId, testCrewId))
+                .thenReturn(Optional.of(testCrew));
+        doNothing().when(crewRepository).delete(any(Crew.class));
 
-        if(null != crew){
-            // Act
-            Crew result = crewService.updateCrewPosition(1, 1, crew);
+        // Act
+        Crew result = crewService.updateCrewPosition(testShipId, testCrewId, testCrew);
 
-            // Assert
-            assertNotNull(result);
-            verify(crewRepository, times(1)).delete(crew);
-        }
+        // Assert
+        assertNotNull(result);
+        assertEquals(testCrew, result);
 
-
-
-        // Case 2: Crew not found - exception thrown before null check
-        when(crewRepository.findCrewByShip_ShipIdAndCrewId(1, 1))
-                .thenReturn(Optional.empty());
-
-        // Act & Assert - exception case
-        assertThrows(EntityNotFoundException.class, () -> {
-            crewService.updateCrewPosition(1, 1, crew);
-        });
-        // Verify delete was not called in exception case
-        verify(crewRepository, times(1)).delete(any());
-
+        verify(shipRepository).findById(testShipId);
+        verify(crewRepository).findCrewByShip_ShipIdAndCrewId(testShipId, testCrewId);
+        verify(crewRepository).delete(testCrew);
     }
 
     @Test
     void updateCrewPosition_ShipNotFound() {
         // Arrange
-        when(shipRepository.findById(1)).thenReturn(Optional.empty());
+        when(shipRepository.findById(testShipId)).thenReturn(Optional.empty());
 
         // Act & Assert
         assertThrows(EntityNotFoundException.class, () -> {
-            crewService.updateCrewPosition(1, 1, crew);
+            crewService.updateCrewPosition(testShipId, testCrewId, testCrew);
         });
-        verify(crewRepository, never()).delete(any(Crew.class));
+
+        verify(shipRepository).findById(testShipId);
+        verify(crewRepository, never()).findCrewByShip_ShipIdAndCrewId(any(), any());
     }
 
     @Test
     void updateCrewPosition_CrewNotFound() {
         // Arrange
-        when(shipRepository.findById(1)).thenReturn(Optional.of(ship));
-        when(crewRepository.findCrewByShip_ShipIdAndCrewId(1, 1)).thenReturn(Optional.empty());
+        when(shipRepository.findById(testShipId)).thenReturn(Optional.of(testShip));
+        when(crewRepository.findCrewByShip_ShipIdAndCrewId(testShipId, testCrewId))
+                .thenReturn(Optional.empty());
 
         // Act & Assert
         assertThrows(EntityNotFoundException.class, () -> {
-            crewService.updateCrewPosition(1, 1, crew);
+            crewService.updateCrewPosition(testShipId, testCrewId, testCrew);
         });
-        verify(crewRepository, never()).delete(any(Crew.class));
+
+        verify(shipRepository).findById(testShipId);
+        verify(crewRepository).findCrewByShip_ShipIdAndCrewId(testShipId, testCrewId);
     }
 
     @Test
     void deleteCrewFromShip_Success() {
         // Arrange
-        when(shipRepository.findById(1)).thenReturn(Optional.of(ship));
-        when(crewRepository.findCrewByShip_ShipIdAndCrewId(1, 1)).thenReturn(Optional.of(crew));
+        when(shipRepository.findById(testShipId)).thenReturn(Optional.of(testShip));
+        when(crewRepository.findCrewByShip_ShipIdAndCrewId(testShipId, testCrewId))
+                .thenReturn(Optional.of(testCrew));
+        doNothing().when(crewRepository).delete(any(Crew.class));
 
         // Act
-        boolean result = crewService.deleteCrewFromShip(1, 1);
+        boolean result = crewService.deleteCrewFromShip(testShipId, testCrewId);
 
         // Assert
         assertTrue(result);
-        verify(crewRepository, times(1)).delete(crew);
+
+        verify(shipRepository).findById(testShipId);
+        verify(crewRepository).findCrewByShip_ShipIdAndCrewId(testShipId, testCrewId);
+        verify(crewRepository).delete(testCrew);
     }
 
     @Test
     void deleteCrewFromShip_ShipNotFound() {
         // Arrange
-        when(shipRepository.findById(1)).thenReturn(Optional.empty());
+        when(shipRepository.findById(testShipId)).thenReturn(Optional.empty());
 
         // Act & Assert
         assertThrows(EntityNotFoundException.class, () -> {
-            crewService.deleteCrewFromShip(1, 1);
+            crewService.deleteCrewFromShip(testShipId, testCrewId);
         });
-        verify(crewRepository, never()).delete(any(Crew.class));
+
+        verify(shipRepository).findById(testShipId);
+        verify(crewRepository, never()).findCrewByShip_ShipIdAndCrewId(any(), any());
     }
 
     @Test
     void deleteCrewFromShip_CrewNotFound() {
         // Arrange
-        when(shipRepository.findById(1)).thenReturn(Optional.of(ship));
-        when(crewRepository.findCrewByShip_ShipIdAndCrewId(1, 1)).thenReturn(Optional.empty());
+        when(shipRepository.findById(testShipId)).thenReturn(Optional.of(testShip));
+        when(crewRepository.findCrewByShip_ShipIdAndCrewId(testShipId, testCrewId))
+                .thenReturn(Optional.empty());
 
         // Act & Assert
         assertThrows(EntityNotFoundException.class, () -> {
-            crewService.deleteCrewFromShip(1, 1);
+            crewService.deleteCrewFromShip(testShipId, testCrewId);
         });
-        verify(crewRepository, never()).delete(any(Crew.class));
+
+        verify(shipRepository).findById(testShipId);
+        verify(crewRepository).findCrewByShip_ShipIdAndCrewId(testShipId, testCrewId);
     }
 }
