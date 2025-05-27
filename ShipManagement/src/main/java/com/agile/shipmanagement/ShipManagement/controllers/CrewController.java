@@ -77,4 +77,16 @@ public class CrewController {
         }
 
     }
+
+
+    @GetMapping("/crew/{name}")
+    ResponseEntity<?> getCrewByName(@PathVariable("name") String name) {
+        Crew crewByName = crewService.getCrewByName(name);
+        if (null != crewByName) {
+            return new ResponseEntity<>(ResponseUtil.buildResponse(HttpStatus.OK.value(), "Crew Found Successfully.",
+                    crewByName), HttpStatus.OK);
+        }
+        return new ResponseEntity<>(ResponseUtil.buildResponse(HttpStatus.OK.value(), "No Crew Found.",
+                new HashMap<>()), HttpStatus.OK);
+    }
 }

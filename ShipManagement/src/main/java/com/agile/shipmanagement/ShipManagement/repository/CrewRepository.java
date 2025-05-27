@@ -11,4 +11,5 @@ import java.util.Optional;
 public interface CrewRepository extends JpaRepository<Crew,Integer> {
     List<Crew> findAllByShip_ShipId(Integer shipId);
     Optional<Crew> findCrewByShip_ShipIdAndCrewId(int shipShipId, int crewId);
+    Optional<Crew> findCrewByName(String name);
 }

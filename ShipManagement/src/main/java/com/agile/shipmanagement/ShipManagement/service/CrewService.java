@@ -1,6 +1,5 @@
 package com.agile.shipmanagement.ShipManagement.service;
 
-import com.agile.shipmanagement.ShipManagement.model.BaseEntityModel;
 import com.agile.shipmanagement.ShipManagement.model.Crew;
 import com.agile.shipmanagement.ShipManagement.model.Ship;
 import com.agile.shipmanagement.ShipManagement.repository.CrewRepository;
@@ -12,6 +11,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 @Service
 public class CrewService {
@@ -45,9 +45,10 @@ public class CrewService {
     public Crew updateCrewPosition(Integer shipId, Integer crewId, Crew crew) {
         shipRepository.findById(shipId).orElseThrow(() -> new EntityNotFoundException("Ship not found"));
 
-        Crew crewDeleted = crewRepository.findCrewByShip_ShipIdAndCrewId(shipId, crewId).orElseThrow(() -> new EntityNotFoundException("Crew not found"));
-        crewRepository.delete(crewDeleted);
-        return crewDeleted;
+        Crew crewTobeUpdated = crewRepository.findCrewByShip_ShipIdAndCrewId(shipId, crewId).orElseThrow(() -> new EntityNotFoundException("Crew not found"));
+        crewTobeUpdated.setPosition(crew.getPosition());
+        crewRepository.save(crewTobeUpdated);
+        return crewTobeUpdated;
     }
 
     @Transactional
@@ -60,5 +61,15 @@ public class CrewService {
         isDeleted = true;
         return isDeleted;
 
+    }
+
+    public Crew getCrewByName(String name) {
+        Optional<Crew> crewObj = crewRepository.findCrewByName(name);
+
+        if (crewObj.isPresent()) {
+            return crewObj.orElse(null);
+        } else {
+            return null;
+        }
     }
 }
